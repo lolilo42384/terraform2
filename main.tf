@@ -49,7 +49,6 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-
 resource "aws_ecr_repository" "app_repo" {
   name = "fastapi-app-repo"
 
@@ -60,8 +59,14 @@ resource "aws_ecr_repository" "app_repo" {
   tags = {
     Name = "fastapi-app-repo"
   }
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = [image_scanning_configuration]
+  }
 }
 
 resource "aws_ecs_cluster" "main" {
   name = "fastapi-cluster"
 }
+
