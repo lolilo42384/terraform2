@@ -7,10 +7,18 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Verify AWS credentials exist
+        run: |
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
+            echo "AWS credentials are not set in GitHub secrets."
+            exit 1
+          fi
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -23,7 +31,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to ECR
+      - name: Build, tag, and push Docker image to ECR
         env:
           ECR_REPO: fastapi-app-repo
         run: |
@@ -31,7 +39,7 @@ jobs:
           docker build -t $IMAGE .
           docker push $IMAGE
 
-      - name: Apply Terraform
+      - name: Terraform Init and Apply
         run: |
           terraform init
           terraform apply -auto-approve
