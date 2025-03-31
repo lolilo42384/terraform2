@@ -15,7 +15,7 @@ jobs:
       - name: Verify AWS credentials exist
         run: |
           if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
-            echo "AWS credentials are not set in GitHub secrets"
+            echo "AWS credentials are not set in GitHub secrets."
             exit 1
           fi
 
