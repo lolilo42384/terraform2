@@ -24,10 +24,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Terraform Init & Apply
-        run: |
-          terraform init
-          terraform apply -auto-approve
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Import ECR repository (safe)
+        run: terraform import aws_ecr_repository.app_repo fastapi-app-repo || echo "ECR already managed"
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
 
       - name: Log in to Amazon ECR
         id: login-ecr
