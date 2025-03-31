@@ -17,13 +17,6 @@ jobs:
         with:
           terraform_version: 1.6.6
 
-      - name: Verify AWS credentials exist
-        run: |
-          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
-            echo "AWS credentials are not set in GitHub secrets."
-            exit 1
-          fi
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -31,19 +24,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Terraform Init & Apply
+        run: |
+          terraform init
+          terraform apply -auto-approve
+
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push Docker image to ECR
+      - name: Build and push Docker image
         env:
           ECR_REPO: fastapi-app-repo
         run: |
           IMAGE="${{ steps.login-ecr.outputs.registry }}/${ECR_REPO}:latest"
           docker build -t $IMAGE .
           docker push $IMAGE
-
-      - name: Terraform Init and Apply
-        run: |
-          terraform init
-          terraform apply -auto-approve
